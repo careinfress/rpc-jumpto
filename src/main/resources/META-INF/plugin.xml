@@ -1,10 +1,10 @@
 <idea-plugin>
     <id>com.fkw.plugin.jnetkit.rpc-jumpto</id>
-    <name>Plugin display name here</name>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <name>A Plugin Of Jumpto RPC</name>
+    <vendor email="A Plugin Of Jumpto RPC" url="http://www.fkw.com">做营销,上凡科网</vendor>
 
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
+    A Plugin Of Jumpto RPC.<br>
     <em>most HTML tags may be used</em>
     ]]></description>
 
@@ -16,6 +16,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiCliLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiSvrLineMarkerProvider"/>
     </extensions>
 
     <actions>

@@ -18,6 +18,9 @@ dependencies {
 
 intellij {
     version '2018.2.1'
+    pluginName = 'rpc-jumpto'
+    plugins = ['coverage']
+    intellij.updateSinceUntilBuild false
 }
 patchPluginXml {
     changeNotes """

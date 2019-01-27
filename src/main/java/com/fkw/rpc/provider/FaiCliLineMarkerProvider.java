@@ -1,15 +1,14 @@
 package com.fkw.rpc.provider;
 
-import com.fkw.rpc.utils.Icons;
+
+import com.fkw.rpc.wrapper.Reference;
+import com.fkw.rpc.wrapper.ReferenceCollection;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
-import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
-import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.psi.*;
+import com.intellij.psi.search.searches.ReferencesSearch;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
-import java.util.Objects;
 
 public class FaiCliLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
@@ -26,7 +25,9 @@ public class FaiCliLineMarkerProvider extends RelatedItemLineMarkerProvider {
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        //判断是否为方法
+
+
+        /*//判断是否为方法
         if (!(element instanceof PsiMethod)) return;
 
         //方法的父类为class
@@ -51,13 +52,14 @@ public class FaiCliLineMarkerProvider extends RelatedItemLineMarkerProvider {
                         .setTooltipTitle("Data access object found - ");
                 result.add(builder.createLineMarkerInfo(element));
             }
-        }
+        }*/
 
 
-//        //判断有无try代码块
+        //判断有无try代码块
 //        if (!(element instanceof PsiTryStatement)) return;
 //        PsiTryStatement psiTryStatement = (PsiTryStatement) element;
 //        PsiCodeBlock tryBlock = psiTryStatement.getTryBlock();
+//
 //
 //        if (tryBlock == null) return;
 //        if (tryBlock.getText().contains(FAI_CLI_EXPRESSION)) {
@@ -72,24 +74,30 @@ public class FaiCliLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
 
 
-//        //判断是否为Psi表达式代码块
-//        if (!(element instanceof PsiMethodCallExpression)) return;
-//
-//
-//        PsiMethodCallExpression psiMethodCallExpression = (PsiMethodCallExpression) element;
-//        PsiFile psiFile = psiMethodCallExpression.getContainingFile();
-//
-//
-//
-//        System.out.println(psiMethodCallExpression.getText());
-//        if (!psiMethodCallExpression.getText().startsWith(FAI_CLI_EXPRESSION)) return;
-//
-//        NavigationGutterIconBuilder<PsiElement> builder =
-//                NavigationGutterIconBuilder.create(Icons.SPRING_INJECTION_ICON)
-//                        .setAlignment(GutterIconRenderer.Alignment.CENTER)
-//                        .setTarget(element)
-//                        .setTooltipTitle("Data access object found - ");
-//        result.add(builder.createLineMarkerInfo(((PsiNameIdentifierOwner) element).getNameIdentifier()));
+        //判断是否为Psi表达式代码块
+        if (!(element instanceof PsiReferenceExpression)) return;
+        PsiReferenceExpression psiReferenceExpression = (PsiReferenceExpression) element;
+        if (psiReferenceExpression.getCanonicalText().equals(FAI_CLI_EXPRESSION)) {
+            //System.out.println(psiReferenceExpression.getContext());
+            PsiElement[] children = psiReferenceExpression.getNextSibling().getChildren();
+
+            ReferencesSearch.SearchParameters searchParameters = new ReferencesSearch.SearchParameters(children[1], children[1].getUseScope(), true);
+            ReferenceCollection referenceCollection = new ReferenceCollection(ReferencesSearch.search(searchParameters).findAll());
+
+            for (Reference reference : referenceCollection) {
+                System.out.println(reference.containingClass().getText());
+            }
+
+
+//            NavigationGutterIconBuilder<PsiElement> builder =
+//                    NavigationGutterIconBuilder.create(Icons.SPRING_INJECTION_ICON)
+//                            .setAlignment(GutterIconRenderer.Alignment.CENTER)
+//                            .setTarget(element)
+//                            .setTooltipTitle("Data access object found - ");
+//            result.add(builder.createLineMarkerInfo(element));
+
+        }
+
 
     }
 

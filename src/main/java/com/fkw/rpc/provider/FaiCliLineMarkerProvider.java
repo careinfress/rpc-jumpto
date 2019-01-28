@@ -1,12 +1,16 @@
 package com.fkw.rpc.provider;
 
 
+import com.fkw.rpc.utils.Icons;
 import com.fkw.rpc.wrapper.Reference;
 import com.fkw.rpc.wrapper.ReferenceCollection;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
+import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.psi.*;
 import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 
@@ -24,35 +28,6 @@ public class FaiCliLineMarkerProvider extends RelatedItemLineMarkerProvider {
      */
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
-
-
-
-        /*//判断是否为方法
-        if (!(element instanceof PsiMethod)) return;
-
-        //方法的父类为class
-        PsiElement psiClazz = element.getParent();//PsiClass
-        if (psiClazz == null || !(element instanceof PsiClass)) return;
-        PsiClass psiClass = (PsiClass) psiClazz;
-        //判断是否在fai.cli包下
-        if (!Objects.requireNonNull(psiClass.getQualifiedName()).startsWith(FAI_CLI_PREFIX)) return;
-
-        PsiMethod psiMethod = (PsiMethod) element;
-        PsiCodeBlock psiCodeBlock = psiMethod.getBody();
-        if (psiCodeBlock == null) return;
-        PsiStatement[] statements = psiCodeBlock.getStatements();
-        for (PsiStatement statement : statements) {
-            System.out.println(statement.getText());
-            System.out.println("====================");
-            if (statement.getText().contains(FAI_CLI_EXPRESSION)) {
-                NavigationGutterIconBuilder<PsiElement> builder =
-                NavigationGutterIconBuilder.create(Icons.SPRING_INJECTION_ICON)
-                        .setAlignment(GutterIconRenderer.Alignment.CENTER)
-                        .setTarget(element)
-                        .setTooltipTitle("Data access object found - ");
-                result.add(builder.createLineMarkerInfo(element));
-            }
-        }*/
 
 
         //判断有无try代码块
@@ -78,23 +53,23 @@ public class FaiCliLineMarkerProvider extends RelatedItemLineMarkerProvider {
         if (!(element instanceof PsiReferenceExpression)) return;
         PsiReferenceExpression psiReferenceExpression = (PsiReferenceExpression) element;
         if (psiReferenceExpression.getCanonicalText().equals(FAI_CLI_EXPRESSION)) {
-            //System.out.println(psiReferenceExpression.getContext());
+            System.out.println(psiReferenceExpression.getContainingFile().getName());
+            //如果不是XXXCli.java的文件剔除
+            if (!psiReferenceExpression.getContainingFile().getName().endsWith("Cli.java")) return;
+
             PsiElement[] children = psiReferenceExpression.getNextSibling().getChildren();
+            //children[1].getText();              //AcctOptDef.Protocol.Cmd.GET_ACCTOPT_DATA
+            //psiReferenceExpression.getContext();//sendProtocol.setCmd(AcctOptDef.Protocol.Cmd.GET_ACCTOPT_DATA);
 
-            ReferencesSearch.SearchParameters searchParameters = new ReferencesSearch.SearchParameters(children[1], children[1].getUseScope(), true);
-            ReferenceCollection referenceCollection = new ReferenceCollection(ReferencesSearch.search(searchParameters).findAll());
-
-            for (Reference reference : referenceCollection) {
-                System.out.println(reference.containingClass().getText());
-            }
+            PsiTreeUtil.findChildrenOfType(children[1],PsiLiteralExpression.class);
 
 
-//            NavigationGutterIconBuilder<PsiElement> builder =
-//                    NavigationGutterIconBuilder.create(Icons.SPRING_INJECTION_ICON)
-//                            .setAlignment(GutterIconRenderer.Alignment.CENTER)
-//                            .setTarget(element)
-//                            .setTooltipTitle("Data access object found - ");
-//            result.add(builder.createLineMarkerInfo(element));
+            NavigationGutterIconBuilder<PsiElement> builder =
+                    NavigationGutterIconBuilder.create(Icons.SPRING_INJECTION_ICON)
+                            .setAlignment(GutterIconRenderer.Alignment.CENTER)
+                            .setTarget(element)
+                            .setTooltipTitle("Data access object found - ");
+            result.add(builder.createLineMarkerInfo(element));
 
         }
 

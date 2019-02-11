@@ -18,11 +18,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JavaUtils {
 
-    public final static Map<String, PsiElement> cliToSvrCache = Collections.synchronizedMap(new LRUMap(200));
-    public final static Map<PsiElement, PsiElement> svrToCliCache = Collections.synchronizedMap(new LRUMap(200));
+    public final static Map<String, PsiElement> cliToSvrCache = new ConcurrentHashMap<String, PsiElement>();
+    public final static Map<PsiElement, PsiElement> svrToCliCache = new ConcurrentHashMap<PsiElement, PsiElement>();
+    public final static Map<String, String> procNameMapperCache = new ConcurrentHashMap<String, String>();
+
+
 
     private JavaUtils() {
         throw new UnsupportedOperationException();
@@ -90,36 +94,40 @@ public class JavaUtils {
     //====================下面的方法将引入到FaiUtils.java===========================
 
     public static void cliThreadAnalysis(String cliKey, ReferenceCollection references) {
-        if (references == null || references.isEmpty()) {return ;}
+        if (cliToSvrCache.containsKey(cliKey)) {return;}
+        if (references == null || references.isEmpty()) {return;}
         Iterator<Reference> iterator = references.iterator();
         while (iterator.hasNext()) {
             Reference reference = iterator.next();
-            PsiMethod psiMethod = reference.containingMethod();
             PsiClass psiClass = reference.containingClass();
-            if (psiClass == null || psiClass.getSuperClass() == null) continue;
-            if (psiMethod != null && psiMethod.getName().equals("processThread")) {
-                //老svr
-                if (psiClass.getSuperClass().getName().equals("FaiServer")) {
-                    processThreadMethodAnalysis(cliKey, reference);
-                }
-            } else {
+            PsiMethod psiMethod = reference.containingMethod();
+            if (psiClass == null || psiMethod == null) continue;
+            PsiReferenceList implementsList = psiClass.getImplementsList();
 
-                //新svr
-                if (psiClass.getSuperClass().getName().equals("FaiHandler") || psiClass.getSuperClass().getName().equals("GenericProc")) {
+            if (psiClass.getSuperClass() != null) {
+                //老svr或者新svr用注解的方式
+                if (psiMethod.getName().equals("processThread") && psiClass.getSuperClass().getName().equals("FaiServer")) {
+                    processThreadMethodAnalysis(reference);
+                } else if (psiClass.getSuperClass().getName().equals("FaiHandler")) {
                     cliToSvrCache.put(cliKey, reference.getPsiElement());
                 }
             }
+            //老svr用注解的方式
+            if (implementsList != null) {
+                PsiClassType[] referencedTypes = implementsList.getReferencedTypes();
+                for (PsiClassType referencedType : referencedTypes) {
+                    if (referencedType.getClassName().equals("GenericProc")) {
+                        cliToSvrCache.put(cliKey, reference.getPsiElement());
+                    }
+                }
+            }
         }
-        return ;
     }
 
-    public static void processThreadMethodAnalysis(String cliKey, Reference reference) {
-        if (cliToSvrCache.containsKey(cliKey)) {return;}
+    private static void processThreadMethodAnalysis(Reference reference) {
         if (reference == null) return;
         PsiMethod psiMethod = reference.containingMethod();
         if (psiMethod == null) return;
-        String classQualifiedName = getProcClassQualifiedName(reference.containingClass());
-        if (StringUtils.isEmpty(classQualifiedName)) return;
         PsiElement methodLastChild = psiMethod.getLastChild();
         PsiElement[] children = methodLastChild.getChildren();
         for (PsiElement child : children) {
@@ -131,13 +139,16 @@ public class JavaUtils {
                 if (element instanceof PsiSwitchLabelStatement) { //case代码块
                     PsiSwitchLabelStatement psiSwitchLabelStatement = (PsiSwitchLabelStatement) element;
                     if (psiSwitchLabelStatement.getCaseValue() != null) {
-                        System.out.println(psiSwitchLabelStatement.getCaseValue().getText());
                         caseValue = psiSwitchLabelStatement.getCaseValue().getText();
                     }
                 } else if (element instanceof PsiReturnStatement) {
                     PsiReturnStatement psiReturnStatement = (PsiReturnStatement) element;
                     PsiExpression returnValue = psiReturnStatement.getReturnValue();
+                    String procAliasName = getProcAliasName(returnValue.getText());
                     String methodName = getOldProcMethodName(returnValue.getText());
+                    if (StringUtils.isEmpty(procAliasName) || StringUtils.isEmpty(methodName)) continue;
+                    if (!procNameMapperCache.containsKey(procAliasName)) procClassQualifiedName(reference.containingClass());
+                    String classQualifiedName = procNameMapperCache.get(procAliasName);
                     Optional<PsiMethod> method = JavaUtils.findMethod(reference.getPsiElement().getProject(), classQualifiedName, methodName);
                     if (!method.isPresent()) continue;
                     cliToSvrCache.put(caseValue, method.get());
@@ -146,21 +157,19 @@ public class JavaUtils {
         }
     }
 
-    public static String getProcClassQualifiedName(PsiClass psiClass) {
-        String procClassQualifiedName = "";
-        if (psiClass == null) return procClassQualifiedName;
-        PsiField[] allFields = psiClass.getAllFields();
+    private static void procClassQualifiedName(PsiClass psiClass) {
+        if (psiClass == null) return;
+        PsiField[] allFields = psiClass.getFields();
         for (PsiField psiField : allFields) {
             Optional<PsiClass> referenceClazzOfPsiField = JavaUtils.getReferenceClazzOfPsiField(psiField);
             if (!referenceClazzOfPsiField.isPresent()) continue;
             String qualifiedName = referenceClazzOfPsiField.get().getQualifiedName();
-            if (!qualifiedName.startsWith("fai.svr.")) continue;
-            procClassQualifiedName = qualifiedName;
+            if (StringUtils.isEmpty(qualifiedName) || !qualifiedName.startsWith("fai.svr.")) continue;
+            procNameMapperCache.put(psiField.getName(), qualifiedName);
         }
-        return procClassQualifiedName;
     }
 
-    public static String getOldProcMethodName(String returnVaule) {
+    private static String getOldProcMethodName(String returnVaule) {
         String methodName = "";
         if (StringUtils.isEmpty(returnVaule)) return methodName;
         String[] splits = returnVaule.split("\\.");
@@ -170,6 +179,16 @@ public class JavaUtils {
         methodName = substring;
         return methodName;
     }
+
+    private static String getProcAliasName(String returnVaule) {
+        String aliasName = "";
+        if (StringUtils.isEmpty(returnVaule)) return aliasName;
+        String[] splits = returnVaule.split("\\.");
+        if (splits.length <= 1) return aliasName;
+        aliasName = splits[0];
+        return aliasName;
+    }
+
 
 
 

@@ -15,6 +15,10 @@ public class ReferenceCollection extends AbstractCollection<Reference> {
         }
     }
 
+    public void clear ()  {
+        this.references.clear();
+    }
+
     public ReferenceCollection(ReferenceCollection references) {
         this.references.addAll(references);
     }

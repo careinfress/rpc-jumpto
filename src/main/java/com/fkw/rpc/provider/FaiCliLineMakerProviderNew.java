@@ -13,6 +13,7 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.psi.*;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -42,7 +43,7 @@ public class FaiCliLineMakerProviderNew extends RelatedItemLineMarkerProvider {
             String clazzName = FAI_APP_PREFIX + tagPsi.getFirstChild().getText();
             Optional<PsiClass> clazz = JavaUtils.findClazz(element.getProject(), clazzName);
             if (!clazz.isPresent()) return;
-            PsiField[] allFields = clazz.get().getAllFields();
+            PsiField[] allFields = clazz.get().getFields();
             for (PsiField field : allFields) {
                 if (!(field instanceof PsiNamedElement)) return;
                 PsiNamedElement psiNamedElement = (PsiNamedElement) field;
@@ -60,7 +61,7 @@ public class FaiCliLineMakerProviderNew extends RelatedItemLineMarkerProvider {
 
         //缓存存在
         NavigationGutterIconBuilder<PsiElement> builder =
-                NavigationGutterIconBuilder.create(Icons.SPRING_INJECTION_ICON)
+                NavigationGutterIconBuilder.create(Icons.FAI_CLI_ICON)
                         .setAlignment(GutterIconRenderer.Alignment.CENTER)
                         .setTarget(JavaUtils.cliToSvrCache.get(tagPsi.getText()))
                         .setTooltipTitle("");
@@ -71,12 +72,18 @@ public class FaiCliLineMakerProviderNew extends RelatedItemLineMarkerProvider {
         boolean flag = false;
         //1. 判断格式是否符合
         if (!(psiElement instanceof PsiMethodCallExpression)) return flag;
+        //2. 判断标记前缀格式是否符合
         PsiMethodCallExpression psiMethodCallExpression = (PsiMethodCallExpression) psiElement;
-        //1. 判断标记前缀格式是否符合
         if (!psiMethodCallExpression.getMethodExpression().getQualifiedName().equals(FAI_CLI_EXPRESSION)) return flag;
         //3. 判断类名前缀是否符合
         PsiJavaFile psiJavaFile = PsiTreeUtil.getParentOfType(psiElement, PsiJavaFile.class);
         if (psiJavaFile == null || !psiJavaFile.getPackageName().equals(FAI_CLI_PREFIX)) return flag;
+        //4. 判断类的父类是否符合
+        PsiClass psiClass = PsiTreeUtil.getParentOfType(psiElement, PsiClass.class);
+        if (psiClass == null) return flag;
+        PsiClass superClass = psiClass.getSuperClass();
+        if (superClass == null) return flag;
+        if (StringUtils.isEmpty(superClass.getName()) || !superClass.getName().equals("FaiClient")) return flag;
         flag = true;
         return flag;
     }

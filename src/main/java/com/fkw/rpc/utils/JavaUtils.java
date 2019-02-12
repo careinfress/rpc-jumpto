@@ -169,22 +169,38 @@ public class JavaUtils {
         }
     }
 
+    /**
+     * @see <a href="https://github.com/careinfress/rpc-jumpto/issues/1">20190212提交的issue</a>
+     * @param returnVaule
+     * @return
+     */
     private static String getOldProcMethodName(String returnVaule) {
         String methodName = "";
         if (StringUtils.isEmpty(returnVaule)) return methodName;
         String[] splits = returnVaule.split("\\.");
-        if (splits.length <= 1) return methodName;
+        if (splits.length != 2) return methodName;
+        if (!splits[1].endsWith(")")) {
+            return methodName;
+        }
         String substring = splits[1].substring(0, splits[1].indexOf("("));
         if (StringUtils.isEmpty(substring)) return methodName;
         methodName = substring;
         return methodName;
     }
 
+    /**
+     * @see <a href="https://github.com/careinfress/rpc-jumpto/issues/1">20190212提交的issue</a>
+     * @param returnVaule
+     * @return
+     */
     private static String getProcAliasName(String returnVaule) {
         String aliasName = "";
         if (StringUtils.isEmpty(returnVaule)) return aliasName;
         String[] splits = returnVaule.split("\\.");
-        if (splits.length <= 1) return aliasName;
+        if (splits.length != 2) return aliasName;
+        if (!splits[1].endsWith(")")) {
+            return aliasName;
+        }
         aliasName = splits[0];
         return aliasName;
     }

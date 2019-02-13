@@ -38,6 +38,21 @@ public class JavaUtils {
     }
 
     @NotNull
+    public static Optional<PsiField> findJavaField(@NotNull Project project, @Nullable String clazzName, @Nullable String fieldName) {
+        if (StringUtils.isBlank(clazzName) && StringUtils.isBlank(fieldName)) {
+            return Optional.absent();
+        }
+        Optional<PsiClass> clazz = findClazz(project, clazzName);
+        if (clazz.isPresent()) {
+            PsiField[] fields = clazz.get().getFields();
+            for (PsiField field : fields) {
+                if (field.getName().equals(fieldName)) return Optional.of(field);
+            }
+        }
+        return Optional.absent();
+    }
+
+    @NotNull
     public static Optional<PsiMethod> findMethod(@NotNull Project project, @Nullable String clazzName, @Nullable String methodName) {
         if (StringUtils.isBlank(clazzName) && StringUtils.isBlank(methodName)) {
             return Optional.absent();
@@ -88,7 +103,6 @@ public class JavaUtils {
         PsiType type = ((PsiField) field).getType();
         return type instanceof PsiClassReferenceType ? Optional.fromNullable(((PsiClassReferenceType) type).resolve()) : Optional.<PsiClass>absent();
     }
-
 
 
     //====================下面的方法将引入到FaiUtils.java===========================

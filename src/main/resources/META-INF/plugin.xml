@@ -17,7 +17,8 @@
     <extensions defaultExtensionNs="com.intellij">
 
         <!-- Add your extensions here -->
-        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiCliLineMakerProviderNew"/>
+        <!--<codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiCliLineMakerProviderNew"/>-->
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.AnnotationJNetkitLineMarkerProvider"/>
         <!--<codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiSvrLineMarkerProvider"/>-->
     </extensions>
 

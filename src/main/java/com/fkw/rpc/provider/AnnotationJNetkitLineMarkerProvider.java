@@ -23,15 +23,19 @@ public class AnnotationJNetkitLineMarkerProvider extends RelatedItemLineMarkerPr
         if (!(element instanceof PsiModifierListOwner)) return;
         if (!isTargetField(element)) return;
 
+        PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        if (psiMethod == null) return;
+
         PsiModifierListOwner psiModifierListOwner = (PsiModifierListOwner) element;
         Optional<String> valueText = JavaUtils.getAnnotationValueText(psiModifierListOwner, Annotation.JNETKIT_CMD);
         if (!valueText.isPresent()) return;
         System.out.println(valueText.get());//DnsDef.Protocol.Cmd.GET_ADDR_LIST
         String cliKey = valueText.get();
-        String classQualifiedName = cliKey.substring(0, cliKey.lastIndexOf("\\."));
-        String fieldName = valueText.get().substring(cliKey.lastIndexOf("\\.") + 1);
+        String classQualifiedName = "fai.app." + cliKey.substring(0, cliKey.lastIndexOf("."));
+        String fieldName = valueText.get().substring(cliKey.lastIndexOf(".") + 1);
         Optional<PsiField> javaField = JavaUtils.findJavaField(element.getProject(), classQualifiedName, fieldName);
         if (!javaField.isPresent()) return;
+
 
         ReferenceCollection references = ReferenceCollection.EMPTY;
         references.addAll(PsiElementUsageFinderFactory.getUsageFinder(javaField.get()).findUsages());

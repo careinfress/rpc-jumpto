@@ -46,7 +46,9 @@ public class JavaUtils {
         if (clazz.isPresent()) {
             PsiField[] fields = clazz.get().getFields();
             for (PsiField field : fields) {
-                if (field.getName().equals(fieldName)) return Optional.of(field);
+                if (!(field instanceof PsiNamedElement)) continue;
+                PsiNamedElement psiNamedElement = (PsiNamedElement) field;
+                if (psiNamedElement.getName().equals(fieldName)) return Optional.of(field);
             }
         }
         return Optional.absent();
@@ -165,7 +167,7 @@ public class JavaUtils {
                     String classQualifiedName = procNameMapperCache.get(procAliasName);
                     Optional<PsiMethod> method = JavaUtils.findMethod(reference.getPsiElement().getProject(), classQualifiedName, methodName);
                     if (!method.isPresent()) continue;
-                    cliToSvrCache.put(caseValue, method.get());
+                    cliToSvrCache.put(caseValue, method.get().getNameIdentifier());
                 }
             }
         }

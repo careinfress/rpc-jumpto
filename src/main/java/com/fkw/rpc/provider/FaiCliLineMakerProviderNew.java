@@ -61,7 +61,7 @@ public class FaiCliLineMakerProviderNew extends RelatedItemLineMarkerProvider {
 
         //缓存存在
         NavigationGutterIconBuilder<PsiElement> builder =
-                NavigationGutterIconBuilder.create(Icons.FAI_CLI_ICON)
+                NavigationGutterIconBuilder.create(Icons.FAI_SVR_NEW_ICON)
                         .setAlignment(GutterIconRenderer.Alignment.CENTER)
                         .setTarget(JavaUtils.cliToSvrCache.get(tagPsi.getText()))
                         .setTooltipTitle("");

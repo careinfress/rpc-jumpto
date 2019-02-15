@@ -1,11 +1,10 @@
 <idea-plugin>
     <id>com.fkw.plugin.jnetkit.rpc-jumpto</id>
-    <name>A Plugin Of Jumpto RPC</name>
-    <vendor email="A Plugin Of Jumpto RPC" url="http://www.fkw.com">做营销,上凡科网</vendor>
+    <name>A Plugin Of Jumpto For RPC</name>
+    <vendor email="careinfress@gmail.com" url="http://www.fkw.com">做营销,上凡科网</vendor>
 
     <description><![CDATA[
-    A Plugin Of Jumpto RPC.<br>
-    <em>most HTML tags may be used</em>
+    A Plugin Of Jumpto For RPC.<br>
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
@@ -14,11 +13,13 @@
     <depends>com.intellij.modules.lang</depends>
     -->
 
+    <idea-version since-build="145"/>
+
     <extensions defaultExtensionNs="com.intellij">
 
         <!-- Add your extensions here -->
-        <!--<codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiCliLineMakerProviderNew"/>-->
-        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.AnnotationJNetkitLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiCliLineMakerProviderNew"/>
+        <!--<codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.AnnotationJNetkitLineMarkerProvider"/>-->
         <!--<codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiSvrLineMarkerProvider"/>-->
     </extensions>
 

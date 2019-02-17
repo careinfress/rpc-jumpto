@@ -23,9 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JavaUtils {
 
     public final static Map<String, PsiElement> cliToSvrCache = new ConcurrentHashMap<String, PsiElement>();
-    public final static Map<PsiElement, PsiElement> svrToCliCache = new ConcurrentHashMap<PsiElement, PsiElement>();
     public final static Map<String, String> procNameMapperCache = new ConcurrentHashMap<String, String>();
-
 
 
     private JavaUtils() {
@@ -180,7 +178,7 @@ public class JavaUtils {
             Optional<PsiClass> referenceClazzOfPsiField = JavaUtils.getReferenceClazzOfPsiField(psiField);
             if (!referenceClazzOfPsiField.isPresent()) continue;
             String qualifiedName = referenceClazzOfPsiField.get().getQualifiedName();
-            if (StringUtils.isEmpty(qualifiedName) || !qualifiedName.startsWith("fai.svr.")) continue;
+            if (StringUtils.isEmpty(qualifiedName) || !qualifiedName.startsWith(Constant.FAI_SVR_PACKAGE_NAME_PREFIX)) continue;
             procNameMapperCache.put(psiField.getName(), qualifiedName);
         }
     }

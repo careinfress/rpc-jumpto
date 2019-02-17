@@ -1,6 +1,7 @@
 package com.fkw.rpc.provider;
 
 import com.fkw.rpc.finders.PsiElementUsageFinderFactory;
+import com.fkw.rpc.utils.Constant;
 import com.fkw.rpc.utils.Icons;
 import com.fkw.rpc.utils.JavaUtils;
 import com.fkw.rpc.wrapper.Reference;
@@ -18,11 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
-public class FaiCliLineMakerProviderNew extends RelatedItemLineMarkerProvider {
-
-    private final String FAI_CLI_PREFIX = "fai.cli";
-    private final String FAI_APP_PREFIX = "fai.app.";
-    private final String FAI_CLI_EXPRESSION = "sendProtocol.setCmd";
+public class FaiCliLineMakerProvider extends RelatedItemLineMarkerProvider {
 
 
     @Override
@@ -40,7 +37,7 @@ public class FaiCliLineMakerProviderNew extends RelatedItemLineMarkerProvider {
 
         //如果缓存不存在
         if (!JavaUtils.cliToSvrCache.containsKey(tagPsi.getText())) {
-            String clazzName = FAI_APP_PREFIX + tagPsi.getFirstChild().getText();
+            String clazzName = Constant.FAI_APP_PACKAGE_NAME_PREFIX + tagPsi.getFirstChild().getText();
             Optional<PsiClass> clazz = JavaUtils.findClazz(element.getProject(), clazzName);
             if (!clazz.isPresent()) return;
             PsiField[] allFields = clazz.get().getFields();
@@ -74,10 +71,10 @@ public class FaiCliLineMakerProviderNew extends RelatedItemLineMarkerProvider {
         if (!(psiElement instanceof PsiMethodCallExpression)) return flag;
         //2. 判断标记前缀格式是否符合
         PsiMethodCallExpression psiMethodCallExpression = (PsiMethodCallExpression) psiElement;
-        if (!psiMethodCallExpression.getMethodExpression().getQualifiedName().equals(FAI_CLI_EXPRESSION)) return flag;
+        if (!psiMethodCallExpression.getMethodExpression().getQualifiedName().equals(Constant.FAI_CLI_TAGR_METHOD_EXPRESSION)) return flag;
         //3. 判断类名前缀是否符合
         PsiJavaFile psiJavaFile = PsiTreeUtil.getParentOfType(psiElement, PsiJavaFile.class);
-        if (psiJavaFile == null || !psiJavaFile.getPackageName().equals(FAI_CLI_PREFIX)) return flag;
+        if (psiJavaFile == null || !psiJavaFile.getPackageName().equals(Constant.FAI_CLI_PREFIX)) return flag;
         //4. 判断类的父类是否符合
         PsiClass psiClass = PsiTreeUtil.getParentOfType(psiElement, PsiClass.class);
         if (psiClass == null) return flag;

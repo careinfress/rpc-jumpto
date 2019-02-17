@@ -18,14 +18,6 @@ public class FaiSvrLineMarkerProvider extends RelatedItemLineMarkerProvider {
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        /*if (!(element instanceof PsiField)) return;
-        PsiClass parentOfType = PsiTreeUtil.getParentOfType(element, PsiClass.class);
-        if (parentOfType.getName().endsWith("Cmd"))  {
-            PsiField psiField = (PsiField)element;
-            PsiType type = psiField.getInitializer().getType();
-            System.out.println(type.getCanonicalText());
-        }*/
-
         if (!(element instanceof PsiNamedElement)) return;
         PsiNamedElement psiNamedElement = (PsiNamedElement)element;
         System.out.println(psiNamedElement.getName());
@@ -43,15 +35,4 @@ public class FaiSvrLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
         super.collectNavigationMarkers(element, result);
     }
-
-
-    private boolean isTargetField(PsiField field) {
-        if (JavaUtils.isAnnotationPresent(field, Annotation.JNETKIT_CMD) || JavaUtils.isAnnotationPresent(field, Annotation.NETKIT_CMD)) {
-            return true;
-        }
-        return false;
-    }
-
-
-
 }

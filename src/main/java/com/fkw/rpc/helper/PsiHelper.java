@@ -5,9 +5,10 @@ import com.intellij.psi.PsiElement;
 public class PsiHelper {
 
     private String cliKey;
-    private String svrMethodName;
     private PsiElement cliPsiElement;
     private PsiElement svrPsiElement;
+
+
 
 
     public void setCliPsiElement(PsiElement cliPsiElement) {
@@ -28,11 +29,9 @@ public class PsiHelper {
 
     public void setCliKey(String cliKey) {this.cliKey = cliKey;}
 
-    public void setSvrMethodName(String svrMethodName) {this.svrMethodName = svrMethodName;}
-
     public String getCliKey() {return cliKey;}
 
-    public String getSvrMethodName() {return svrMethodName;}
+
 
 
 }

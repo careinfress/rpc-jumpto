@@ -8,17 +8,17 @@ import javax.swing.*;
 public interface Icons {
 
 
-    Icon MAPPER_LINE_MARKER_ICON = IconLoader.getIcon("/images/mapper_method.png");
-
-    Icon STATEMENT_LINE_MARKER_ICON = IconLoader.getIcon("/images/statement.png");
-
     Icon SPRING_INJECTION_ICON = IconLoader.getIcon("/images/injection.png");
 
-    Icon FAI_CLI_ICON = IconLoader.getIcon("/images/cli.png");
-
-    Icon FAI_SVR_OLD_ICON = IconLoader.getIcon("/images/frankenstein.png");
-
     Icon FAI_SVR_NEW_ICON = IconLoader.getIcon("/images/gas_mask.png");
+
+    Icon FAI_SVR_PIG_ICON = IconLoader.getIcon("/images/pig.png");
+
+    Icon FAI_SVR_bird_ICON = IconLoader.getIcon("/images/birds.png");
+
+    Icon FAI_SVR_PLANE_ICON = IconLoader.getIcon("/images/paper_plane.png");
+
+
 
 
 }

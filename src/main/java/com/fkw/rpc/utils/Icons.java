@@ -18,6 +18,8 @@ public interface Icons {
 
     Icon FAI_SVR_PLANE_ICON = IconLoader.getIcon("/images/paper_plane.png");
 
+    Icon FAI_SVR_FAISCO_ICON = IconLoader.getIcon("/images/faisco.png");
+
 
 
 

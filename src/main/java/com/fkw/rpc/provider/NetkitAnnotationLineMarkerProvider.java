@@ -4,6 +4,7 @@ import com.fkw.rpc.Annotation.Annotation;
 import com.fkw.rpc.finders.PsiElementUsageFinderFactory;
 import com.fkw.rpc.helper.PsiHelper;
 import com.fkw.rpc.utils.Constant;
+import com.fkw.rpc.utils.FaiUtils;
 import com.fkw.rpc.utils.Icons;
 import com.fkw.rpc.utils.JavaUtils;
 import com.fkw.rpc.wrapper.Reference;
@@ -31,15 +32,14 @@ public class NetkitAnnotationLineMarkerProvider extends RelatedItemLineMarkerPro
         PsiModifierListOwner psiModifierListOwner = (PsiModifierListOwner) element;
         Optional<String> annotationValueText = JavaUtils.getAnnotationValueText(psiModifierListOwner, Annotation.NETKIT_CMD);
         if (!annotationValueText.isPresent()) return;
-//      System.out.println(annotationValueText.get());//DnsDef.Protocol.Cmd.GET_ADDR_LIST
 
+        //缓存不存在
         if (!Constant.svrToCliCache.containsKey(element)) {
             String cliKey = annotationValueText.get();
             if (StringUtils.isEmpty(cliKey)) return;
-            int index = cliKey.lastIndexOf(".");
-            if (index <= 0) return;
-            String classQualifiedName = Constant.FAI_APP_PACKAGE_NAME_PREFIX + cliKey.substring(0, index);
-            String fieldName = annotationValueText.get().substring(index + 1);
+            String classQualifiedName = FaiUtils.getAppDefClassQualifiedName(cliKey);
+            String fieldName = FaiUtils.getAppDefFieldName(cliKey);
+            if (StringUtils.isEmpty(classQualifiedName) || StringUtils.isEmpty(fieldName)) return;
             Optional<PsiField> javaField = JavaUtils.findJavaField(element.getProject(), classQualifiedName, fieldName);
             if (!javaField.isPresent()) return;
 
@@ -47,10 +47,7 @@ public class NetkitAnnotationLineMarkerProvider extends RelatedItemLineMarkerPro
             references.addAll(PsiElementUsageFinderFactory.getUsageFinder(javaField.get()).findUsages());
             for (Reference reference : references) {
                 if (reference.containingPackage().equals(Constant.FAI_CLI_PREFIX)) {
-                    PsiHelper psiHelper = new PsiHelper();
-                    psiHelper.setCliKey(annotationValueText.get());
-                    psiHelper.setSvrPsiElement(element);
-                    psiHelper.setCliPsiElement(reference.getPsiElement());
+                    PsiHelper psiHelper = new PsiHelper(annotationValueText.get(), reference.getPsiElement(), element);
                     Constant.svrToCliCache.put(element, psiHelper);
                     Constant.cliToSvrCache.put(annotationValueText.get(), psiHelper);
                 }
@@ -58,6 +55,7 @@ public class NetkitAnnotationLineMarkerProvider extends RelatedItemLineMarkerPro
             references.clear();
         }
 
+        if (Constant.svrToCliCache.get(element) == null) return;
         //缓存存在
         NavigationGutterIconBuilder<PsiElement> builder =
                 NavigationGutterIconBuilder.create(Icons.FAI_SVR_bird_ICON)

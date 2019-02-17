@@ -31,8 +31,6 @@ public class FaiSvrLineMarkerProvider extends RelatedItemLineMarkerProvider {
             if  (psiClass != null) {System.out.println(psiNamedElement.getName() + ":引用的类名为:" + psiClass.getQualifiedName());}
         }
         System.out.println("====================================");
-
-
         super.collectNavigationMarkers(element, result);
     }
 }

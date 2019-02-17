@@ -13,12 +13,12 @@
     <depends>com.intellij.modules.lang</depends>
     -->
 
-    <idea-version since-build="145"/>
+    <!--<idea-version since-build="145"/>-->
 
     <extensions defaultExtensionNs="com.intellij">
 
         <!-- Add your extensions here -->
-        <!--<codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiCliLineMakerProvider"/>-->
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiCliLineMakerProvider"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.JNetkitAnnotationLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.NetkitAnnotationLineMarkerProvider"/>
         <!--<codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.fkw.rpc.provider.FaiSvrLineMarkerProvider"/>-->

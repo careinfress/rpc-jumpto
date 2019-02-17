@@ -2,6 +2,7 @@ package com.fkw.rpc.provider;
 
 import com.fkw.rpc.finders.PsiElementUsageFinderFactory;
 import com.fkw.rpc.utils.Constant;
+import com.fkw.rpc.utils.FaiUtils;
 import com.fkw.rpc.utils.Icons;
 import com.fkw.rpc.utils.JavaUtils;
 import com.fkw.rpc.wrapper.Reference;
@@ -36,31 +37,24 @@ public class FaiCliLineMakerProvider extends RelatedItemLineMarkerProvider {
         PsiElement tagPsi = nextSibling.getFirstChild().getNextSibling();
 
         //如果缓存不存在
-        if (!JavaUtils.cliToSvrCache.containsKey(tagPsi.getText())) {
-            String clazzName = Constant.FAI_APP_PACKAGE_NAME_PREFIX + tagPsi.getFirstChild().getText();
-            Optional<PsiClass> clazz = JavaUtils.findClazz(element.getProject(), clazzName);
-            if (!clazz.isPresent()) return;
-            PsiField[] allFields = clazz.get().getFields();
-            for (PsiField field : allFields) {
-                if (!(field instanceof PsiNamedElement)) return;
-                PsiNamedElement psiNamedElement = (PsiNamedElement) field;
-                //System.out.println(psiNamedElement.getName());
-                // 输出 ：ADD_DOMAIN_BPS_DATA
-                ReferenceCollection references = ReferenceCollection.EMPTY;
-                if (tagPsi.getText().endsWith(psiNamedElement.getName())) {
-                    references.addAll(PsiElementUsageFinderFactory.getUsageFinder(field).findUsages());
-                    JavaUtils.cliThreadAnalysis(tagPsi.getText(), references);
-                    references.clear();
-                }
-            }
+        if (!Constant.cliToSvrCache.containsKey(tagPsi.getText())) {//CdnDef.Protocol.Cmd.REFRESH_OBJECT_CACHES
+            String clazzName = FaiUtils.getAppDefClassQualifiedName(tagPsi.getText());
+            String fieldName = FaiUtils.getAppDefFieldName(tagPsi.getText());
+            Optional<PsiField> javaField = JavaUtils.findJavaField(element.getProject(), clazzName, fieldName);
+            if (!javaField.isPresent()) return;
+            ReferenceCollection references = ReferenceCollection.EMPTY;
+            references.addAll(PsiElementUsageFinderFactory.getUsageFinder(javaField.get()).findUsages());
+            FaiUtils.cliThreadAnalysis(tagPsi.getText(), references, element);
+            references.clear();
         }
 
 
+        if (Constant.cliToSvrCache.get(tagPsi.getText()) == null) return;
         //缓存存在
         NavigationGutterIconBuilder<PsiElement> builder =
-                NavigationGutterIconBuilder.create(Icons.FAI_SVR_NEW_ICON)
+                NavigationGutterIconBuilder.create(Icons.FAI_SVR_FAISCO_ICON)
                         .setAlignment(GutterIconRenderer.Alignment.CENTER)
-                        .setTarget(JavaUtils.cliToSvrCache.get(tagPsi.getText()))
+                        .setTarget(Constant.cliToSvrCache.get(tagPsi.getText()).getSvrPsiElement())
                         .setTooltipTitle("");
         result.add(builder.createLineMarkerInfo(element));
     }

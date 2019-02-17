@@ -11,6 +11,8 @@ public class Constant {
     public final static Map<PsiElement, PsiHelper> svrToCliCache = new ConcurrentHashMap<PsiElement, PsiHelper>();
     public final static Map<String, PsiHelper> cliToSvrCache = new ConcurrentHashMap<String, PsiHelper>();
 
+    public final static Map<String, String> procNameMapperCache = new ConcurrentHashMap<String, String>();
+
 
     public Constant() { throw new UnsupportedOperationException(); }
 

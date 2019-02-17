@@ -9,6 +9,13 @@ public class PsiHelper {
     private PsiElement svrPsiElement;
 
 
+    public PsiHelper(String cliKey, PsiElement cliPsiElement, PsiElement svrPsiElement) {
+        this.cliKey =cliKey;
+        this.cliPsiElement = cliPsiElement;
+        this.svrPsiElement =svrPsiElement;
+    }
+
+    public PsiHelper() {}
 
 
     public void setCliPsiElement(PsiElement cliPsiElement) {
@@ -30,8 +37,6 @@ public class PsiHelper {
     public void setCliKey(String cliKey) {this.cliKey = cliKey;}
 
     public String getCliKey() {return cliKey;}
-
-
 
 
 }

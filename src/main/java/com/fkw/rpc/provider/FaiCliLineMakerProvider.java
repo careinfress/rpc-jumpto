@@ -5,7 +5,6 @@ import com.fkw.rpc.utils.Constant;
 import com.fkw.rpc.utils.FaiUtils;
 import com.fkw.rpc.utils.Icons;
 import com.fkw.rpc.utils.JavaUtils;
-import com.fkw.rpc.wrapper.Reference;
 import com.fkw.rpc.wrapper.ReferenceCollection;
 import com.google.common.base.Optional;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
@@ -13,7 +12,6 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.psi.*;
-import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +35,8 @@ public class FaiCliLineMakerProvider extends RelatedItemLineMarkerProvider {
         PsiElement tagPsi = nextSibling.getFirstChild().getNextSibling();
 
         //如果缓存不存在
-        if (!Constant.cliToSvrCache.containsKey(tagPsi.getText())) {//CdnDef.Protocol.Cmd.REFRESH_OBJECT_CACHES
+        //eg: tagPsi.getText() == CdnDef.Protocol.Cmd.REFRESH_OBJECT_CACHES
+        if (!Constant.cliToSvrCache.containsKey(tagPsi.getText())) {
             String clazzName = FaiUtils.getAppDefClassQualifiedName(tagPsi.getText());
             String fieldName = FaiUtils.getAppDefFieldName(tagPsi.getText());
             Optional<PsiField> javaField = JavaUtils.findJavaField(element.getProject(), clazzName, fieldName);

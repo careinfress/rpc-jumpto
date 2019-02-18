@@ -34,7 +34,7 @@ public class FaiUtils {
                     PsiHelper psiHelper = new PsiHelper(cliKey, psiElement, reference.getPsiElement());
                     Constant.cliToSvrCache.put(cliKey, psiHelper);
                     Constant.svrToCliCache.put(reference.getPsiElement(), psiHelper);
-//                    cliToSvrCache.put(cliKey, reference.getPsiElement());
+                    //cliToSvrCache.put(cliKey, reference.getPsiElement());
                 }
             }
             //老svr用注解的方式
@@ -45,7 +45,7 @@ public class FaiUtils {
                         PsiHelper psiHelper = new PsiHelper(cliKey, psiElement, reference.getPsiElement());
                         Constant.cliToSvrCache.put(cliKey, psiHelper);
                         Constant.svrToCliCache.put(reference.getPsiElement(), psiHelper);
-//                        cliToSvrCache.put(cliKey, reference.getPsiElement());
+                        //cliToSvrCache.put(cliKey, reference.getPsiElement());
                     }
                 }
             }

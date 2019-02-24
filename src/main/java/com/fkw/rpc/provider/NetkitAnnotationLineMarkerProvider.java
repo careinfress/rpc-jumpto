@@ -1,6 +1,7 @@
 package com.fkw.rpc.provider;
 
 import com.fkw.rpc.Annotation.Annotation;
+import com.fkw.rpc.bean.FaiPsi;
 import com.fkw.rpc.finders.PsiElementUsageFinderFactory;
 import com.fkw.rpc.helper.PsiHelper;
 import com.fkw.rpc.utils.Constant;
@@ -33,10 +34,14 @@ public class NetkitAnnotationLineMarkerProvider extends RelatedItemLineMarkerPro
         Optional<String> annotationValueText = JavaUtils.getAnnotationValueText(psiModifierListOwner, Annotation.NETKIT_CMD);
         if (!annotationValueText.isPresent()) return;
 
+        String cliKey = annotationValueText.get();
+        if (StringUtils.isEmpty(cliKey)) return;
+
+        PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+        PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+
         //缓存不存在
-        if (!Constant.svrToCliCache.containsKey(element)) {
-            String cliKey = annotationValueText.get();
-            if (StringUtils.isEmpty(cliKey)) return;
+        if (!Constant.faiCache.containsKey(cliKey)) {
             String classQualifiedName = FaiUtils.getAppDefClassQualifiedName(cliKey);
             String fieldName = FaiUtils.getAppDefFieldName(cliKey);
             if (StringUtils.isEmpty(classQualifiedName) || StringUtils.isEmpty(fieldName)) return;
@@ -47,23 +52,32 @@ public class NetkitAnnotationLineMarkerProvider extends RelatedItemLineMarkerPro
             references.addAll(PsiElementUsageFinderFactory.getUsageFinder(javaField.get()).findUsages());
             for (Reference reference : references) {
                 if (reference.containingPackage().equals(Constant.FAI_CLI_PREFIX)) {
-                    PsiHelper psiHelper = new PsiHelper(annotationValueText.get(), reference.getPsiElement(), element);
-                    Constant.svrToCliCache.put(element, psiHelper);
-                    Constant.cliToSvrCache.put(annotationValueText.get(), psiHelper);
+                    FaiPsi faiPsi = new FaiPsi();
+                    faiPsi.setCliKey(cliKey);
+                    faiPsi.setCliClassName(reference.containingClass().getQualifiedName());
+                    faiPsi.setCliMethodName(reference.containingMethod().getName());
+                    faiPsi.setProClassName(psiClass.getQualifiedName());
+                    faiPsi.setProMethodName(psiMethod.getName());
+                    Constant.faiCache.put(cliKey, faiPsi);
                 }
             }
             references.clear();
         }
 
-        if (Constant.svrToCliCache.get(element) == null) return;
+        FaiPsi psi = Constant.faiCache.get(cliKey);
+        if (psi == null) return;
+        Optional<PsiMethod> adress = JavaUtils.getCliAdressByFaiPsi(element, psi);
+        if (!adress.isPresent()) return;
+
         //缓存存在
         NavigationGutterIconBuilder<PsiElement> builder =
-                NavigationGutterIconBuilder.create(Icons.FAI_SVR_bird_ICON)
+                NavigationGutterIconBuilder.create(Icons.FAI_SVR_PLANE_ICON)
                         .setAlignment(GutterIconRenderer.Alignment.CENTER)
-                        .setTarget(Constant.svrToCliCache.get(element).getCliPsiElement())
-                        .setTooltipTitle("");
+                        .setTarget(adress.get().getNameIdentifier())
+                        .setTooltipTitle("Data access object found - " + adress.get().getName());
         result.add(builder.createLineMarkerInfo(element));
     }
+
 
     /**
      * 功能 : 判断元素类是否继承GenericProc

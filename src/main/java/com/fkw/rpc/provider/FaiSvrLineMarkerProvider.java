@@ -18,7 +18,7 @@ public class FaiSvrLineMarkerProvider extends RelatedItemLineMarkerProvider {
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        if (!(element instanceof PsiNamedElement)) return;
+        /*if (!(element instanceof PsiNamedElement)) return;
         PsiNamedElement psiNamedElement = (PsiNamedElement)element;
         System.out.println(psiNamedElement.getName());
         Collection<PsiReference> references = ReferencesSearch.search(element).findAll();
@@ -30,6 +30,6 @@ public class FaiSvrLineMarkerProvider extends RelatedItemLineMarkerProvider {
             if (psiMethod != null) {System.out.println(psiNamedElement.getName() + ":引用的方法名为:" + psiMethod.getName());}
             if  (psiClass != null) {System.out.println(psiNamedElement.getName() + ":引用的类名为:" + psiClass.getQualifiedName());}
         }
-        super.collectNavigationMarkers(element, result);
+        super.collectNavigationMarkers(element, result);*/
     }
 }

@@ -1,5 +1,6 @@
 package com.fkw.rpc.provider;
 
+import com.fkw.rpc.bean.FaiPsi;
 import com.fkw.rpc.finders.PsiElementUsageFinderFactory;
 import com.fkw.rpc.utils.Constant;
 import com.fkw.rpc.utils.FaiUtils;
@@ -34,28 +35,40 @@ public class FaiCliLineMakerProvider extends RelatedItemLineMarkerProvider {
         PsiElement nextSibling = psiMethodCallExpression.getFirstChild().getNextSibling();
         PsiElement tagPsi = nextSibling.getFirstChild().getNextSibling();
 
+        PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+        PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        FaiPsi faiPsi = new FaiPsi();
+        faiPsi.setCliKey(tagPsi.getText());
+        faiPsi.setCliClassName(psiClass.getQualifiedName());
+        faiPsi.setCliMethodName(psiMethod.getName());
+
         //如果缓存不存在
         //eg: tagPsi.getText() == CdnDef.Protocol.Cmd.REFRESH_OBJECT_CACHES
-        if (!Constant.cliToSvrCache.containsKey(tagPsi.getText())) {
+        if (!Constant.faiCache.containsKey(tagPsi.getText())) {
             String clazzName = FaiUtils.getAppDefClassQualifiedName(tagPsi.getText());
             String fieldName = FaiUtils.getAppDefFieldName(tagPsi.getText());
             Optional<PsiField> javaField = JavaUtils.findJavaField(element.getProject(), clazzName, fieldName);
             if (!javaField.isPresent()) return;
             ReferenceCollection references = ReferenceCollection.EMPTY;
             references.addAll(PsiElementUsageFinderFactory.getUsageFinder(javaField.get()).findUsages());
-            FaiUtils.cliThreadAnalysis(tagPsi.getText(), references, element);
+            FaiUtils.cliElementAnalysis(faiPsi, references);
             references.clear();
         }
 
 
-        if (Constant.cliToSvrCache.get(tagPsi.getText()) == null) return;
+        FaiPsi psi = Constant.faiCache.get(tagPsi.getText());
+        if (psi == null) return;
+        Optional<PsiMethod> adress = JavaUtils.getProcAdressByFaiPsi(element, psi);
+        if (!adress.isPresent()) return;
+
         //缓存存在
         NavigationGutterIconBuilder<PsiElement> builder =
                 NavigationGutterIconBuilder.create(Icons.FAI_SVR_FAISCO_ICON)
                         .setAlignment(GutterIconRenderer.Alignment.CENTER)
-                        .setTarget(Constant.cliToSvrCache.get(tagPsi.getText()).getSvrPsiElement())
+                        .setTarget(adress.get().getNameIdentifier())
                         .setTooltipTitle("");
-        result.add(builder.createLineMarkerInfo(element));
+                        //.setTooltipTitle("Data access object found - " + adress.get().getName());
+        result.add(builder.createLineMarkerInfo(adress.get().getNameIdentifier()));
     }
 
     private boolean isTargetField(PsiElement psiElement) {

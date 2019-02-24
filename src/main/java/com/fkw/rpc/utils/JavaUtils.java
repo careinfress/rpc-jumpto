@@ -2,6 +2,7 @@ package com.fkw.rpc.utils;
 
 import com.fkw.rpc.Annotation.Annotation;
 
+import com.fkw.rpc.bean.FaiPsi;
 import com.google.common.base.Optional;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -13,8 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class JavaUtils {
-
-//    public final static Map<String, PsiElement> cliToSvrCache = new ConcurrentHashMap<String, PsiElement>();
 
     private JavaUtils() {
         throw new UnsupportedOperationException();
@@ -82,7 +81,7 @@ public class JavaUtils {
     }
 
     public static Optional<String> getAnnotationValueText(@NotNull PsiModifierListOwner target, @NotNull Annotation annotation) {
-        Optional<PsiAnnotationMemberValue> annotationValue = getAnnotationValue(target, annotation);
+            Optional<PsiAnnotationMemberValue> annotationValue = getAnnotationValue(target, annotation);
         return annotationValue.isPresent() ? Optional.of(annotationValue.get().getText().replaceAll("\"", "")) : Optional.<String>absent();
     }
 
@@ -92,6 +91,21 @@ public class JavaUtils {
         }
         PsiType type = ((PsiField) field).getType();
         return type instanceof PsiClassReferenceType ? Optional.fromNullable(((PsiClassReferenceType) type).resolve()) : Optional.<PsiClass>absent();
+    }
+
+
+    public static Optional<PsiMethod> getCliAdressByFaiPsi(@NotNull PsiElement element, @NotNull FaiPsi faiPsi) {
+        String cliClassName = faiPsi.getCliClassName();
+        String cliMethodName = faiPsi.getCliMethodName();
+        if (StringUtils.isEmpty(cliClassName) || StringUtils.isEmpty(cliMethodName))  return Optional.absent();
+        return findMethod(element.getProject(), cliClassName, cliMethodName);
+    }
+
+    public static Optional<PsiMethod> getProcAdressByFaiPsi(@NotNull PsiElement element, @NotNull FaiPsi faiPsi) {
+        String proClassName = faiPsi.getProClassName();
+        String proMethodName = faiPsi.getProMethodName();
+        if (StringUtils.isEmpty(proClassName) || StringUtils.isEmpty(proMethodName))  return Optional.absent();
+        return findMethod(element.getProject(), proClassName, proMethodName);
     }
 
 }

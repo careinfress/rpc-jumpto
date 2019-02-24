@@ -8,19 +8,12 @@ import javax.swing.*;
 public interface Icons {
 
 
-    Icon SPRING_INJECTION_ICON = IconLoader.getIcon("/images/injection.png");
-
     Icon FAI_SVR_NEW_ICON = IconLoader.getIcon("/images/gas_mask.png");
 
     Icon FAI_SVR_PIG_ICON = IconLoader.getIcon("/images/pig.png");
 
-    Icon FAI_SVR_bird_ICON = IconLoader.getIcon("/images/birds.png");
-
     Icon FAI_SVR_PLANE_ICON = IconLoader.getIcon("/images/paper_plane.png");
 
     Icon FAI_SVR_FAISCO_ICON = IconLoader.getIcon("/images/faisco.png");
-
-
-
 
 }

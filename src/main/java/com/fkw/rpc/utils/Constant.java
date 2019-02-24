@@ -1,5 +1,6 @@
 package com.fkw.rpc.utils;
 
+import com.fkw.rpc.bean.FaiPsi;
 import com.fkw.rpc.helper.PsiHelper;
 import com.intellij.psi.PsiElement;
 
@@ -10,6 +11,9 @@ public class Constant {
 
     public final static Map<PsiElement, PsiHelper> svrToCliCache = new ConcurrentHashMap<PsiElement, PsiHelper>();
     public final static Map<String, PsiHelper> cliToSvrCache = new ConcurrentHashMap<String, PsiHelper>();
+
+
+    public final static Map<String, FaiPsi> faiCache = new ConcurrentHashMap<String, FaiPsi>();
 
     public final static Map<String, String> procNameMapperCache = new ConcurrentHashMap<String, String>();
 
@@ -23,6 +27,7 @@ public class Constant {
     public static final String FAI_SVR_PACKAGE_NAME_PREFIX = "fai.svr.";
 
     public static final String FAI_APP_PACKAGE_NAME_PREFIX = "fai.app.";
+
 
 
 }

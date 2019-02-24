@@ -1,5 +1,6 @@
 package com.fkw.rpc.utils;
 
+import com.fkw.rpc.bean.FaiPsi;
 import com.fkw.rpc.helper.PsiHelper;
 import com.fkw.rpc.wrapper.Reference;
 import com.fkw.rpc.wrapper.ReferenceCollection;
@@ -15,6 +16,7 @@ public class FaiUtils {
         throw new UnsupportedOperationException();
     }
 
+    //===================================cash1===================================
     public static void cliThreadAnalysis(String cliKey, ReferenceCollection references, PsiElement psiElement) {
         if (references == null || references.isEmpty()) {return;}
         Iterator<Reference> iterator = references.iterator();
@@ -29,12 +31,10 @@ public class FaiUtils {
                 //老svr或者新svr用注解的方式
                 if (psiMethod.getName().equals("processThread") && psiClass.getSuperClass().getName().equals("FaiServer")) {
                     processThreadMethodAnalysisNew(reference, cliKey, psiElement);
-                    //processThreadMethodAnalysis(reference);
                 } else if (psiClass.getSuperClass().getName().equals("FaiHandler")) {
                     PsiHelper psiHelper = new PsiHelper(cliKey, psiElement, reference.getPsiElement());
                     Constant.cliToSvrCache.put(cliKey, psiHelper);
                     Constant.svrToCliCache.put(reference.getPsiElement(), psiHelper);
-                    //cliToSvrCache.put(cliKey, reference.getPsiElement());
                 }
             }
             //老svr用注解的方式
@@ -45,46 +45,11 @@ public class FaiUtils {
                         PsiHelper psiHelper = new PsiHelper(cliKey, psiElement, reference.getPsiElement());
                         Constant.cliToSvrCache.put(cliKey, psiHelper);
                         Constant.svrToCliCache.put(reference.getPsiElement(), psiHelper);
-                        //cliToSvrCache.put(cliKey, reference.getPsiElement());
                     }
                 }
             }
         }
     }
-
-    /*private static void processThreadMethodAnalysis(Reference reference) {
-        if (reference == null) return;
-        PsiMethod psiMethod = reference.containingMethod();
-        if (psiMethod == null) return;
-        PsiElement methodLastChild = psiMethod.getLastChild();
-        PsiElement[] children = methodLastChild.getChildren();
-        for (PsiElement child : children) {
-            if (!(child instanceof PsiSwitchStatement)) continue; //走进swich代码块
-            PsiElement swichElement = child.getLastChild();
-            PsiElement[] elements = swichElement.getChildren();
-            String caseValue = "";
-            for (PsiElement element : elements) {
-                if (element instanceof PsiSwitchLabelStatement) { //case代码块
-                    PsiSwitchLabelStatement psiSwitchLabelStatement = (PsiSwitchLabelStatement) element;
-                    if (psiSwitchLabelStatement.getCaseValue() != null) {
-                        caseValue = psiSwitchLabelStatement.getCaseValue().getText();
-                    }
-                } else if (element instanceof PsiReturnStatement) {
-                    PsiReturnStatement psiReturnStatement = (PsiReturnStatement) element;
-                    PsiExpression returnValue = psiReturnStatement.getReturnValue();
-                    String procAliasName = getProcAliasName(returnValue.getText());
-                    String methodName = getOldProcMethodName(returnValue.getText());
-                    if (StringUtils.isEmpty(procAliasName) || StringUtils.isEmpty(methodName)) continue;
-                    if (!procNameMapperCache.containsKey(procAliasName)) procClassQualifiedName(reference.containingClass());
-                    String classQualifiedName = procNameMapperCache.get(procAliasName);
-                    Optional<PsiMethod> method = JavaUtils.findMethod(reference.getPsiElement().getProject(), classQualifiedName, methodName);
-                    if (!method.isPresent()) continue;
-                    cliToSvrCache.put(caseValue, method.get().getNameIdentifier());
-                }
-            }
-        }
-    }*/
-
 
     private static void processThreadMethodAnalysisNew(Reference reference, String cliKey, PsiElement psiElement) {
         if (reference == null) return;
@@ -121,18 +86,85 @@ public class FaiUtils {
             }
         }
     }
+    //===================================cash1===================================
 
-    private static void procClassQualifiedName(PsiClass psiClass) {
-        if (psiClass == null) return;
-        PsiField[] allFields = psiClass.getFields();
-        for (PsiField psiField : allFields) {
-            Optional<PsiClass> referenceClazzOfPsiField = JavaUtils.getReferenceClazzOfPsiField(psiField);
-            if (!referenceClazzOfPsiField.isPresent()) continue;
-            String qualifiedName = referenceClazzOfPsiField.get().getQualifiedName();
-            if (StringUtils.isEmpty(qualifiedName) || !qualifiedName.startsWith(Constant.FAI_SVR_PACKAGE_NAME_PREFIX)) continue;
-            Constant.procNameMapperCache.put(psiField.getName(), qualifiedName);
+
+    //===================================cash2===================================
+    public static void cliElementAnalysis(FaiPsi faiPsi, ReferenceCollection references) {
+        if (references == null || references.isEmpty()) {return;}
+        Iterator<Reference> iterator = references.iterator();
+        while (iterator.hasNext()) {
+            Reference reference = iterator.next();
+            PsiClass psiClass = reference.containingClass();
+            PsiMethod psiMethod = reference.containingMethod();
+            PsiReferenceList implementsList = psiClass.getImplementsList();
+
+            if (psiClass == null || psiMethod == null) continue;
+
+            //老svr或者新svr用注解的方式
+            if (psiClass.getSuperClass() != null) {
+                if (psiMethod.getName().equals("processThread") && psiClass.getSuperClass().getName().equals("FaiServer")) {
+                    processThreadMethodAnalysis(reference);
+                } else if (psiClass.getSuperClass().getName().equals("FaiHandler")) {
+                    faiPsi.setProMethodName(psiMethod.getName());
+                    faiPsi.setProClassName(psiClass.getQualifiedName());
+                    Constant.faiCache.put(faiPsi.getCliKey(), faiPsi);
+                }
+            }
+
+            //老svr用注解的方式
+            if (implementsList != null) {
+                PsiClassType[] referencedTypes = implementsList.getReferencedTypes();
+                for (PsiClassType referencedType : referencedTypes) {
+                    if (referencedType.getClassName().equals("GenericProc")) {
+                        faiPsi.setProMethodName(psiMethod.getName());
+                        faiPsi.setProClassName(psiClass.getQualifiedName());
+                        Constant.faiCache.put(faiPsi.getCliKey(), faiPsi);
+                    }
+                }
+            }
         }
     }
+
+    private static void processThreadMethodAnalysis(Reference reference) {
+        if (reference == null) return;
+        PsiMethod psiMethod = reference.containingMethod();
+        if (psiMethod == null) return;
+        PsiElement methodLastChild = psiMethod.getLastChild();
+        PsiElement[] children = methodLastChild.getChildren();
+        for (PsiElement child : children) {
+            if (!(child instanceof PsiSwitchStatement)) continue; //走进swich代码块
+            PsiElement swichElement = child.getLastChild();
+            PsiElement[] elements = swichElement.getChildren();
+            String caseValue = "";
+            for (PsiElement element : elements) {
+                if (element instanceof PsiSwitchLabelStatement) { //case代码块
+                    PsiSwitchLabelStatement psiSwitchLabelStatement = (PsiSwitchLabelStatement) element;
+                    if (psiSwitchLabelStatement.getCaseValue() != null) {
+                        caseValue = psiSwitchLabelStatement.getCaseValue().getText();
+                    }
+                } else if (element instanceof PsiReturnStatement) {
+                    PsiReturnStatement psiReturnStatement = (PsiReturnStatement) element;
+                    PsiExpression returnValue = psiReturnStatement.getReturnValue();
+                    String procAliasName = getProcAliasName(returnValue.getText());
+                    String methodName = getOldProcMethodName(returnValue.getText());
+                    if (StringUtils.isEmpty(procAliasName) || StringUtils.isEmpty(methodName)) continue;
+                    if (!Constant.procNameMapperCache.containsKey(procAliasName)) procClassQualifiedName(reference.containingClass());
+                    String classQualifiedName = Constant.procNameMapperCache.get(procAliasName);
+                    Optional<PsiMethod> method = JavaUtils.findMethod(reference.getPsiElement().getProject(), classQualifiedName, methodName);
+                    if (!method.isPresent()) continue;
+                    FaiPsi faiPsi = new FaiPsi();
+                    faiPsi.setCliKey(caseValue);
+                    faiPsi.setProClassName(classQualifiedName);
+                    faiPsi.setProMethodName(methodName);
+                    System.out.println(faiPsi.toString());
+                    Constant.faiCache.put(caseValue, faiPsi);
+                }
+            }
+        }
+    }
+    //===================================cash2===================================
+
 
 
     /**
@@ -205,5 +237,17 @@ public class FaiUtils {
         return fieldName;
     }
 
+
+    private static void procClassQualifiedName(PsiClass psiClass) {
+        if (psiClass == null) return;
+        PsiField[] allFields = psiClass.getFields();
+        for (PsiField psiField : allFields) {
+            Optional<PsiClass> referenceClazzOfPsiField = JavaUtils.getReferenceClazzOfPsiField(psiField);
+            if (!referenceClazzOfPsiField.isPresent()) continue;
+            String qualifiedName = referenceClazzOfPsiField.get().getQualifiedName();
+            if (StringUtils.isEmpty(qualifiedName) || !qualifiedName.startsWith(Constant.FAI_SVR_PACKAGE_NAME_PREFIX)) continue;
+            Constant.procNameMapperCache.put(psiField.getName(), qualifiedName);
+        }
+    }
 
 }

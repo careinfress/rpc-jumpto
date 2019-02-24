@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.fkw.plugin.jnetkit'
-version '1.0-SNAPSHOT'
+version '1.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -27,6 +27,11 @@ patchPluginXml {
       <h4>2019.02.18</h4>
       <ul>
         <li>The first version</li>
+      </ul>
+      <h4>2019.02.24</h4>
+      <ul>
+        <li>解决部分bug</li>
+        <li>鼠标移动跳转图标显示详细信息</li>
       </ul>
      """
 }
